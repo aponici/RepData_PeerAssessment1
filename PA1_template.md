@@ -1,14 +1,10 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-date: "Sunday, February 07, 2016"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
+Sunday, February 07, 2016  
 
 
 ## Loading libraries & Reading the data
-```{r}
+
+```r
 library(ggplot2) # For Number of Steps
 library(lattice) # For Daily Activity Pattern
 repData <- read.csv(unz("activity.zip", "activity.csv"), sep=",", na.strings="NA", header = TRUE)
@@ -18,7 +14,8 @@ repData <- read.csv(unz("activity.zip", "activity.csv"), sep=",", na.strings="NA
 
 1. Make a histogram of the total number of steps taken each day
 
-```{r}
+
+```r
 steps.date <- aggregate(steps ~ date, data=repData, FUN=sum) # Sum steps for each day
 steps.date$newdate <- as.Date(steps.date$date, format="%Y-%m-%d") # Convert to class date
 graph <- ggplot(data=steps.date, aes(x=newdate, y=steps)) + # Bar better than Hist here
@@ -26,15 +23,28 @@ graph <- ggplot(data=steps.date, aes(x=newdate, y=steps)) + # Bar better than Hi
       xlab("Date") + ylab("Number of Steps") +
       ggtitle("Number of steps each Day")
 graph + scale_x_date(date_labels = "%b %d") # Make dates easily read
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)
 
 2. Calculate and report the **mean** and **median** total number of
    steps taken per day
 
-```{r}
+
+```r
 mean(steps.date$steps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(steps.date$steps)
+```
+
+```
+## [1] 10765
 ```
 
 ## What is the average daily activity pattern?
@@ -43,17 +53,25 @@ median(steps.date$steps)
    interval (x-axis) and the average number of steps taken, averaged
    across all days (y-axis)
 
-```{r}
+
+```r
 steps.interval <- aggregate(steps ~ interval, data=repData, FUN=mean)
 xyplot(steps ~ interval, steps.interval, type = "s",
     xlab = "Interval", ylab = "Number of steps")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)
+
 2. Which 5-minute interval, on average across all the days in the
    dataset, contains the maximum number of steps?
 
-```{r}
+
+```r
 steps.interval$interval[which.max(steps.interval$steps)]
+```
+
+```
+## [1] 835
 ```
 
 ## Imputing missing values
@@ -61,8 +79,13 @@ steps.interval$interval[which.max(steps.interval$steps)]
 1. Calculate and report the total number of missing values in the
    dataset (i.e. the total number of rows with `NA`s)
 
-```{r}
+
+```r
 sum(is.na(repData))
+```
+
+```
+## [1] 2304
 ```
 
 2. Devise a strategy for filling in all of the missing values in the
@@ -75,7 +98,8 @@ I average the 5-minute intervals and use those as fillers for missing values.
 3. Create a new dataset that is equal to the original dataset but with
    the missing data filled in.
 
-```{r}
+
+```r
 repData <- merge(repData, steps.interval, by="interval", suffixes=c("",".y"))
 nas <- is.na(repData$steps)
 repData$steps[nas] <- repData$steps.y[nas]
@@ -88,11 +112,28 @@ repData <- repData[,c(1:3)]
    the first part of the assignment? What is the impact of imputing
    missing data on the estimates of the total daily number of steps?
 
-```{r}
+
+```r
 steps.date <- aggregate(steps ~ date, data=repData, FUN=sum)
 barplot(steps.date$steps, names.arg=steps.date$date, xlab="Date", ylab="Number of Steps", col=c("red"))
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png)
+
+```r
 mean(steps.date$steps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(steps.date$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 There is remarkably little difference between the two estimates, however the overall bias of the data has diminished.
@@ -104,7 +145,8 @@ Overall, the input of missing data had small impact.
    "weekday" and "weekend" indicating whether a given date is a
    weekday or weekend day.
 
-```{r}
+
+```r
 day <- weekdays(as.Date(repData$date))
 dayType <- vector()
 for (i in 1:nrow(repData)) {
@@ -128,7 +170,10 @@ names(stepsByDay) <- c("interval", "dayType", "steps")
    taken, averaged across all weekday days or weekend days
    (y-axis).
 
-```{r}
+
+```r
 xyplot(steps ~ interval | dayType, stepsByDay, type = "l", layout = c(1, 2), 
     xlab = "Interval", ylab = "Number of steps")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)
